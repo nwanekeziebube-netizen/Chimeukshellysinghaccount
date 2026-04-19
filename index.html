@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Chime • Banking</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;display=swap');
+        
+        :root {
+            --chime-green: #00c48c;
+        }
+        
+        * {
+            font-family: 'Inter', system_ui, sans-serif;
+        }
+        
+        .app-container {
+            max-width: 390px;
+            width: 100%;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.15);
+            position: relative;
+            overflow: hidden;
+            border-radius: 40px;
+        }
+        
+        .header-bg {
+            background: linear-gradient(180deg, #0a3d2e 0%, #0f4a38 100%);
+        }
+        
+        .chime-logo {
+            color: #00c48c;
+            font-weight: 700;
+            letter-spacing: -1px;
+        }
+        
+        .card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        }
+        
+        .modal {
+            animation: modalPop 0.3s ease forwards;
+        }
+        
+        @keyframes modalPop {
+            0% { opacity: 0; transform: scale(0.95); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        
+        .transaction-item {
+            animation: slideIn 0.4s ease forwards;
+        }
+        
+        .debit-card {
+            box-shadow: 
+                0 25px 50px -12px rgb(0 0 0 / 0.25),
+                0 10px 15px -3px rgb(0 0 0 / 0.15),
+                inset 0 2px 0 rgba(255,255,255,0.6),
+                inset 0 -2px 0 rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.9);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+    <div class="app-container rounded-3xl overflow-hidden border border-gray-200" id="app">
+        
+        <!-- TOP STATUS BAR -->
+        <div class="h-11 bg-white flex items-end justify-between px-6 text-xs text-gray-700 font-medium z-50">
+            <div>9:41</div>
+            <div class="flex items-center gap-3">
+                <i class="fa-solid fa-signal-bars"></i>
+                <i class="fa-solid fa-wifi"></i>
+                <i class="fa-solid fa-battery-three-quarters"></i>
+            </div>
+        </div>
+        
+        <!-- NAVIGATION BAR -->
+        <div class="flex items-center justify-between px-5 py-3 header-bg text-white sticky top-0 z-40">
+            <div class="flex items-center gap-2">
+                <i onclick="showBellMenu()" class="fa-solid fa-bell text-2xl cursor-pointer relative">
+                    <span class="absolute -top-1 -right-1 bg-green-400 text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">3</span>
+                </i>
+                <div onclick="navigateTo('home')" class="chime-logo text-3xl cursor-pointer">chime</div>
+            </div>
+            
+            <div onclick="claim125()" 
+                 class="px-5 py-1.5 border-2 border-[#00c48c] text-[#00c48c] font-semibold rounded-3xl text-sm flex items-center gap-1 hover:bg-white/10 transition-colors">
+                <i class="fa-solid fa-gift"></i>
+                Get $125
+            </div>
+            
+            <div onclick="showProfileMenu()" class="flex items-center gap-1 cursor-pointer">
+                <div class="text-sm font-medium">Shellysingh</div>
+                <i class="fa-solid fa-circle-user text-2xl"></i>
+            </div>
+        </div>
+        
+        <!-- HOME SCREEN -->
+        <div id="screen-home" class="screen">
+            
+            <!-- Available Balance -->
+            <div class="px-6 pt-4 pb-6 header-bg text-white">
+                <div class="flex items-baseline justify-between">
+                    <div>
+                        <div class="text-sm font-medium opacity-80">Available</div>
+                        <div onclick="showBalanceModal()" class="text-5xl font-semibold tracking-tighter cursor-pointer">
+                            $0.00
+                        </div>
+                    </div>
+                    <i onclick="showBalanceModal()" class="fa-solid fa-chevron-right text-3xl opacity-70 cursor-pointer"></i>
+                </div>
+                
+                <div onclick="showAccountModal()" class="flex items-center gap-2 mt-2 cursor-pointer">
+                    <span class="text-[#00c48c] text-sm font-medium">$0 Shellysingh</span>
+                    <i class="fa-solid fa-chevron-right text-xs"></i>
+                </div>
+                
+                <!-- MyPay + Savings -->
+                <div class="grid grid-cols-2 gap-4 mt-8">
+                    <!-- MyPay -->
+                    <div onclick="openMyPay()" class="card bg-white text-gray-900 rounded-3xl px-5 py-5 shadow-xl">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <div class="font-semibold text-lg">MyPay</div>
+                                <div class="text-4xl font-semibold mt-6">$0.00</div>
+                                <div class="text-emerald-500 text-sm mt-1">Available now</div>
+                            </div>
+                            <i class="fa-solid fa-wallet text-3xl text-emerald-400"></i>
+                        </div>
+                    </div>
+                    
+                    <!-- Savings -->
+                    <div onclick="openSavings()" class="card bg-white text-gray-900 rounded-3xl px-5 py-5 shadow-xl">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <div class="font-semibold text-lg">Savings</div>
+                                <div class="text-4xl font-semibold mt-6">$0.00</div>
+                                <div class="text-emerald-500 text-sm mt-1">2.00% APY</div>
+                            </div>
+                            <i class="fa-solid fa-piggy-bank text-3xl text-amber-400"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Cashback Promo Banner -->
+            <div onclick="openDeals()" class="mx-5 -mt-4 bg-emerald-400 rounded-3xl px-6 py-5 text-white relative overflow-hidden shadow-2xl flex items-center justify-between cursor-pointer">
+                <div class="max-w-[210px]">
+                    <div class="font-semibold text-lg leading-tight">Get cash back on gas, groceries, and more</div>
+                    <div onclick="event.stopImmediatePropagation(); openDeals()" class="mt-4 inline-flex items-center gap-1 text-sm font-medium bg-white/20 px-5 py-2 rounded-3xl">
+                        Find deals 
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </div>
+                </div>
+                
+                <!-- Visuals matching uploaded image -->
+                <div class="flex flex-col items-end">
+                    <div class="flex items-center gap-2">
+                        <div class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-inner text-3xl">🥦</div>
+                        <div class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-inner text-3xl">🍊</div>
+                    </div>
+                    <div class="w-14 h-14 bg-white rounded-3xl flex items-center justify-center shadow-inner text-4xl -mt-3">🥛</div>
+                </div>
+                
+                <i onclick="event.stopImmediatePropagation(); dismissPromo()" class="fa-solid fa-xmark absolute top-4 right-4 text-white/70 text-xl cursor-pointer"></i>
+            </div>
+            
+            <!-- Scrollable Content -->
+            <div class="px-5 pt-8 pb-24 overflow-y-auto h-[calc(100vh-380px)]" id="home-scroll">
+                
+                <!-- Financial Tools -->
+                <div class="flex items-center justify-between mb-4">
+                    <div class="font-semibold text-xl">Financial tools</div>
+                    <div onclick="openAllTools()" class="text-emerald-500 text-sm font-medium flex items-center gap-1">
+                        See all <i class="fa-solid fa-chevron-right text-xs"></i>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-3 gap-3 mb-8">
+                    <div onclick="quickSendMoney()" class="bg-white rounded-2xl p-4 text-center shadow-sm card">
+                        <i class="fa-solid fa-paper-plane text-2xl text-emerald-500 mb-2"></i>
+                        <div class="text-sm font-medium">Send money</div>
+                    </div>
+                    <div onclick="quickDeposit()" class="bg-white rounded-2xl p-4 text-center shadow-sm card">
+                        <i class="fa-solid fa-mobile-screen-button text-2xl text-emerald-500 mb-2"></i>
+                        <div class="text-sm font-medium">Mobile deposit</div>
+                    </div>
+                    <div onclick="quickBillPay()" class="bg-white rounded-2xl p-4 text-center shadow-sm card">
+                        <i class="fa-solid fa-receipt text-2xl text-emerald-500 mb-2"></i>
+                        <div class="text-sm font-medium">Pay bills</div>
+                    </div>
+                </div>
+                
+                <!-- Transaction History -->
+                <div class="mb-6">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="font-semibold text-xl">Activity</div>
+                        <div onclick="navigateTo('transactions')" class="text-emerald-500 text-sm font-medium">View all</div>
+                    </div>
+                    
+                    <!-- Single Real Transaction -->
+                    <div onclick="showTransactionDetail()" class="transaction-item bg-white border border-gray-100 rounded-3xl px-5 py-5 flex items-center justify-between shadow-sm">
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 bg-emerald-100 rounded-2xl flex items-center justify-center text-2xl">🏦</div>
+                            <div>
+                                <div class="font-medium">FRC Enterprise</div>
+                                <div class="text-emerald-500 text-sm">Sent from FRC Enterprise</div>
+                                <div class="text-xs text-gray-400">Apr 18 • Pending • +$300.00</div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-2xl font-semibold text-emerald-500">+$300</div>
+                            <div class="text-xs text-gray-400">Not yet available</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- TRANSACTIONS SCREEN -->
+        <div id="screen-transactions" class="screen hidden flex flex-col h-[calc(100vh-55px)]">
+            <div class="px-6 py-4 border-b flex items-center justify-between sticky top-0 bg-white z-10">
+                <div onclick="navigateTo('home')" class="flex items-center gap-2 text-emerald-500">
+                    <i class="fa-solid fa-chevron-left"></i>
+                    <span class="font-medium">Home</span>
+                </div>
+                <div class="font-semibold text-lg">Activity</div>
+                <div class="text-emerald-500 font-medium">Filter</div>
+            </div>
+            
+            <div class="flex-1 overflow-y-auto px-5 pt-6">
+                <div class="mb-8">
+                    <h3 class="font-medium text-gray-400 text-sm mb-2">APRIL 2026</h3>
+                    <div onclick="showTransactionDetail()" class="transaction-item bg-white border border-gray-100 rounded-3xl px-5 py-5 flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 bg-emerald-100 rounded-2xl flex items-center justify-center text-2xl">🏦</div>
+                            <div>
+                                <div class="font-medium">FRC Enterprise</div>
+                                <div class="text-emerald-500 text-sm">Sent from FRC Enterprise</div>
+                                <div class="text-xs text-gray-400">Apr 18 • Pending</div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-2xl font-semibold text-emerald-500">+$300.00</div>
+                            <div class="text-xs bg-amber-100 text-amber-600 px-3 py-px rounded-3xl inline-block">Pending</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- CARDS SCREEN -->
+        <div id="screen-cards" class="screen hidden flex flex-col h-[calc(100vh-55px)]">
+            <div class="px-6 py-4 border-b flex items-center justify-between sticky top-0 bg-white z-10">
+                <div onclick="navigateTo('home')" class="flex items-center gap-2 text-emerald-500">
+                    <i class="fa-solid fa-chevron-left"></i>
+                    <span class="font-medium">Home</span>
+                </div>
+                <div class="font-semibold text-lg">My Cards</div>
+                <div onclick="addNewCard()" class="text-emerald-500 font-medium flex items-center"><i class="fa-solid fa-plus mr-1"></i> Add</div>
+            </div>
+            
+            <div class="flex-1 px-6 pt-6 overflow-y-auto">
+                
+                <!-- Exact Debit Card Replica from Image 2 -->
+                <div id="main-debit-card" onclick="activateCard()" class="debit-card bg-white rounded-3xl p-6 mb-6 relative cursor-pointer">
+                    <div class="flex justify-between items-start">
+                        <!-- Chip -->
+                        <div class="w-12 h-8 bg-gradient-to-br from-gray-300 to-gray-400 rounded-md flex items-center justify-center text-[10px] font-bold text-gray-700 shadow-inner">CHIP</div>
+                        <!-- Contactless -->
+                        <div class="w-8 h-8 border-2 border-gray-400 rounded-full flex items-center justify-center text-xs rotate-12">📡</div>
+                    </div>
+                    
+                    <div class="mt-8 flex items-center gap-2 text-gray-400 text-3xl font-light">
+                        ••••&nbsp;&nbsp;••••&nbsp;&nbsp;••••&nbsp;&nbsp;4242
+                    </div>
+                    
+                    <div class="mt-auto pt-14 flex justify-between items-end">
+                        <div>
+                            <div class="uppercase text-xs tracking-widest text-gray-600">DEBIT</div>
+                            <div class="text-4xl font-bold text-blue-700 tracking-[-1px]">VISA</div>
+                        </div>
+                        
+                        <div class="text-right">
+                            <div class="text-[#00c48c] text-4xl font-bold tracking-[-2px]">chime</div>
+                            <div class="text-sm text-gray-500">Shellysingh</div>
+                            <div class="text-xs text-gray-400">Valid thru 04/29</div>
+                        </div>
+                    </div>
+                    
+                    <div id="activate-btn" class="absolute bottom-6 right-6 bg-emerald-500 text-white text-sm font-medium px-8 py-3 rounded-3xl shadow-lg flex items-center gap-2 hover:bg-emerald-600 transition-colors">
+                        <i class="fa-solid fa-shield-check"></i>
+                        ACTIVATE CARD
+                    </div>
+                </div>
+                
+                <div class="text-center text-emerald-500 text-sm mb-8 font-medium cursor-pointer" onclick="activateCard()">
+                    Tap to activate your physical debit card
+                </div>
+                
+                <!-- More Card Designs -->
+                <div class="font-medium mb-3 text-sm">Other card designs</div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div onclick="selectCardDesign(1)" class="card bg-gradient-to-br from-gray-900 to-black rounded-3xl p-5 text-white relative">
+                        <div class="flex justify-between">
+                            <div class="text-emerald-400 text-3xl font-bold">chime</div>
+                            <div class="text-xs bg-white/10 px-3 py-1 rounded-3xl">PREMIUM</div>
+                        </div>
+                        <div class="mt-10 text-4xl">•••• •••• •••• 8888</div>
+                        <div class="mt-8 flex justify-between text-sm">
+                            <div>Shellysingh</div>
+                            <div>VISA</div>
+                        </div>
+                    </div>
+                    
+                    <div onclick="selectCardDesign(2)" class="card bg-gradient-to-br from-purple-600 to-pink-500 rounded-3xl p-5 text-white relative">
+                        <div class="flex justify-between">
+                            <div class="text-white text-3xl font-bold">chime</div>
+                        </div>
+                        <div class="mt-10 text-4xl">•••• •••• •••• 1212</div>
+                        <div class="mt-8 flex justify-between text-sm">
+                            <div>Shellysingh</div>
+                            <div>VISA</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-8 p-5 bg-gray-50 rounded-3xl text-sm">
+                    <div class="flex justify-between items-center">
+                        <div>Freeze card</div>
+                        <label onclick="toggleFreeze()" class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="freeze-toggle" class="sr-only peer">
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-500"></div>
+                        </label>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">Temporarily lock your card from use</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- BOTTOM NAVIGATION -->
+        <div class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[390px] bg-white border-t z-50 flex items-center justify-around py-2 text-xs font-medium text-gray-500">
+            <div onclick="navigateTo('home')" class="flex flex-col items-center active:scale-95 transition-transform" id="nav-home">
+                <i class="fa-solid fa-house text-lg mb-px"></i>
+                Home
+            </div>
+            <div onclick="navigateTo('transactions')" class="flex flex-col items-center active:scale-95 transition-transform" id="nav-activity">
+                <i class="fa-solid fa-receipt text-lg mb-px"></i>
+                Activity
+            </div>
+            <div onclick="navigateTo('cards')" class="flex flex-col items-center active:scale-95 transition-transform" id="nav-cards">
+                <i class="fa-solid fa-credit-card text-lg mb-px"></i>
+                Cards
+            </div>
+            <div onclick="openMoveMoney()" class="flex flex-col items-center active:scale-95 transition-transform">
+                <i class="fa-solid fa-arrow-right-arrow-left text-lg mb-px"></i>
+                Move $
+            </div>
+            <div onclick="openMoreMenu()" class="flex flex-col items-center active:scale-95 transition-transform">
+                <i class="fa-solid fa-ellipsis text-lg mb-px"></i>
+                More
+            </div>
+        </div>
+        
+    </div>
+    
+    <!-- MODALS -->
+    <div onclick="if(event.target.id === 'balance-modal')hideModals()" id="balance-modal" class="hidden fixed inset-0 bg-black/60 z-[9999] flex items-end">
+        <div class="modal bg-white w-full max-w-[390px] mx-auto rounded-t-3xl p-6">
+            <h2 class="text-2xl font-semibold mb-6">Available balance breakdown</h2>
+            <div class="space-y-6">
+                <div class="flex justify-between"><span class="font-medium">Checking</span><span class="font-semibold">$0.00</span></div>
+                <div class="flex justify-between"><span class="font-medium">MyPay</span><span class="font-semibold">$0.00</span></div>
+                <div class="flex justify-between"><span class="font-medium">Pending deposits</span><span class="font-semibold text-emerald-500">+$300.00</span></div>
+                <div class="pt-6 border-t flex justify-between text-xl font-semibold">
+                    <span>Total available</span>
+                    <span>$0.00</span>
+                </div>
+            </div>
+            <button onclick="hideModals()" class="w-full mt-8 py-4 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-3xl">Done</button>
+        </div>
+    </div>
+    
+    <div onclick="if(event.target.id === 'tx-modal')hideModals()" id="tx-modal" class="hidden fixed inset-0 bg-black/60 z-[9999] flex items-end">
+        <div class="modal bg-white w-full max-w-[390px] mx-auto rounded-t-3xl p-6">
+            <div class="flex justify-center mb-4">
+                <div class="w-12 h-1 bg-gray-300 rounded-full"></div>
+            </div>
+            <div class="text-center">
+                <div class="text-4xl font-semibold text-emerald-500">+$300.00</div>
+                <div class="text-lg font-medium mt-1">FRC Enterprise</div>
+                <div class="text-xs text-gray-400 mt-6">Sent from FRC Enterprise • Pending</div>
+                <div class="text-xs text-gray-400">April 18, 2026 • 11:22 AM</div>
+            </div>
+            
+            <div class="my-8 border border-dashed border-gray-300 rounded-3xl p-5 text-center text-xs">
+                This transaction will not affect your available balance until cleared.
+            </div>
+            
+            <div onclick="hideModals()" class="flex justify-center items-center gap-2 text-emerald-500 font-medium cursor-pointer">
+                <i class="fa-solid fa-download"></i>
+                Download receipt
+            </div>
+            
+            <button onclick="hideModals()" class="w-full mt-8 py-4 bg-black text-white font-semibold rounded-3xl">Close</button>
+        </div>
+    </div>
+    
+    <div onclick="if(event.target.id === 'mypay-modal')hideModals()" id="mypay-modal" class="hidden fixed inset-0 bg-black/60 z-[9999] flex items-end">
+        <div class="modal bg-white w-full max-w-[390px] mx-auto rounded-t-3xl p-6">
+            <h2 class="text-2xl font-semibold">MyPay</h2>
+            <p class="mt-2 text-gray-500">Get up to 50% of your paycheck early — instantly.</p>
+            <div class="mt-8 bg-emerald-50 rounded-3xl p-6 text-center">
+                <div class="text-6xl font-bold">$0.00</div>
+                <div class="text-sm text-emerald-600 font-medium mt-2">Available now</div>
+            </div>
+            <button onclick="hideModals()" class="w-full mt-8 py-4 bg-emerald-500 text-white font-semibold rounded-3xl">Request early pay</button>
+            <p onclick="hideModals()" class="text-center text-xs text-gray-400 mt-6 cursor-pointer">Learn how MyPay works</p>
+        </div>
+    </div>
+    
+    <div onclick="if(event.target.id === 'savings-modal')hideModals()" id="savings-modal" class="hidden fixed inset-0 bg-black/60 z-[9999] flex items-end">
+        <div class="modal bg-white w-full max-w-[390px] mx-auto rounded-t-3xl p-6">
+            <h2 class="text-2xl font-semibold">Savings • 2.00% APY</h2>
+            <div class="flex justify-between mt-8">
+                <div>Current balance</div>
+                <div class="font-semibold">$0.00</div>
+            </div>
+            <div class="text-xs text-emerald-500 mt-8">Your savings are earning interest daily</div>
+            <button onclick="transferToSavings()" class="w-full mt-8 py-4 bg-emerald-500 text-white font-semibold rounded-3xl">Transfer to Savings</button>
+        </div>
+    </div>
+    
+    <div onclick="if(event.target.id === 'deals-modal')hideModals()" id="deals-modal" class="hidden fixed inset-0 bg-black/60 z-[9999] flex items-end">
+        <div class="modal bg-white w-full max-w-[390px] mx-auto rounded-t-3xl p-6">
+            <div class="flex justify-between items-baseline">
+                <h2 class="text-2xl font-semibold">Cash back deals</h2>
+                <i onclick="hideModals()" class="fa-solid fa-xmark text-2xl cursor-pointer"></i>
+            </div>
+            <div class="mt-6 space-y-4">
+                <div class="flex gap-4 bg-gray-50 rounded-2xl p-4">
+                    <div class="text-4xl">⛽</div>
+                    <div class="flex-1"><span class="font-medium">Shell • 8% cash back</span><br><span class="text-xs">Expires in 3 days</span></div>
+                    <div class="text-emerald-500 font-medium">$12.50</div>
+                </div>
+                <div class="flex gap-4 bg-gray-50 rounded-2xl p-4">
+                    <div class="text-4xl">🛒</div>
+                    <div class="flex-1"><span class="font-medium">Whole Foods • 5% cash back</span><br><span class="text-xs">No expiration</span></div>
+                    <div class="text-emerald-500 font-medium">$8.00</div>
+                </div>
+            </div>
+            <button onclick="hideModals()" class="w-full mt-8 py-4 bg-emerald-500 text-white font-semibold rounded-3xl">Activate all deals</button>
+        </div>
+    </div>
+    
+    <!-- Bell Menu -->
+    <div onclick="if(event.target.id === 'bell-menu')hideModals()" id="bell-menu" class="hidden fixed inset-0 bg-black/60 z-[9999] flex items-start justify-end pt-16 pr-6">
+        <div class="modal bg-white w-72 rounded-3xl p-4 shadow-2xl">
+            <div class="text-sm font-medium p-3">3 new notifications</div>
+            <div class="p-3 hover:bg-gray-100 rounded-2xl cursor-pointer">Your $300 from FRC Enterprise is pending</div>
+            <div class="p-3 hover:bg-gray-100 rounded-2xl cursor-pointer">2% APY just paid on savings</div>
+            <div class="p-3 hover:bg-gray-100 rounded-2xl cursor-pointer">Chime referral bonus available</div>
+        </div>
+    </div>
+    
+    <script>
+        function initializeTailwind() {
+            return {
+                config(userConfig = {}) {
+                    return {
+                        configUser: userConfig,
+                        theme: {
+                            extend: {
+                                colors: { chime: '#00c48c' }
+                            }
+                        }
+                    }
+                },
+                theme(userConfig = {}) {
+                    return { ...this.defaultTheme(), ...this.config(userConfig).theme }
+                },
+                defaultTheme() {
+                    return { colors: { chime: '#00c48c' } }
+                }
+            }
+        }
+        
+        function init() {
+            const config = initializeTailwind().theme()
+            document.documentElement.setAttribute('data-tailwind-config', JSON.stringify(config))
+            
+            console.log('%c🚀 Chime Mobile Banking Replica – Production Ready', 'background:#00c48c;color:white;padding:4px 8px;border-radius:4px;font-size:13px')
+        }
+        
+        function navigateTo(screen) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'))
+            const target = document.getElementById(`screen-${screen}`)
+            if (target) target.classList.remove('hidden')
+            
+            document.querySelectorAll('#app .fa-house, #app .fa-receipt, #app .fa-credit-card').forEach(i => i.classList.remove('text-emerald-500'))
+            
+            if (screen === 'home') document.getElementById('nav-home').querySelector('i').classList.add('text-emerald-500')
+            if (screen === 'transactions') document.getElementById('nav-activity').querySelector('i').classList.add('text-emerald-500')
+            if (screen === 'cards') document.getElementById('nav-cards').querySelector('i').classList.add('text-emerald-500')
+        }
+        
+        function claim125() {
+            const modal = document.createElement('div')
+            modal.className = 'fixed inset-0 bg-black/70 z-[10000] flex items-center justify-center'
+            modal.innerHTML = `
+            <div class="modal bg-white rounded-3xl max-w-[340px] p-8 text-center">
+                <div class="text-5xl mb-4">🎉</div>
+                <h2 class="text-2xl font-semibold">Refer a friend &amp; get $125</h2>
+                <p class="mt-4 text-gray-600">Your unique link is ready. Share it and both get $125 when they join and receive a direct deposit.</p>
+                <div class="mt-8 p-4 bg-gray-100 rounded-2xl font-mono text-sm break-all">https://chime.com/r/shellysingh-847392</div>
+                <button onclick="this.closest('.fixed').remove()" class="mt-6 w-full py-4 bg-emerald-500 text-white rounded-3xl font-semibold">Copy link &amp; share</button>
+                <div onclick="this.closest('.fixed').remove()" class="text-xs text-gray-400 mt-6 cursor-pointer">Close</div>
+            </div>`
+            document.body.appendChild(modal)
+        }
+        
+        function showBalanceModal() {
+            document.getElementById('balance-modal').classList.remove('hidden')
+            document.getElementById('balance-modal').classList.add('flex')
+        }
+        
+        function hideModals() {
+            document.querySelectorAll('.fixed.inset-0').forEach(m => {
+                m.classList.add('hidden')
+                m.classList.remove('flex')
+            })
+        }
+        
+        function showAccountModal() {
+            alert("Account: Shellysingh\nRouting: 123456789\nAccount: 9876543210\nStatus: Verified")
+        }
+        
+        function openMyPay() {
+            document.getElementById('mypay-modal').classList.remove('hidden')
+            document.getElementById('mypay-modal').classList.add('flex')
+        }
+        
+        function openSavings() {
+            document.getElementById('savings-modal').classList.remove('hidden')
+            document.getElementById('savings-modal').classList.add('flex')
+        }
+        
+        function transferToSavings() {
+            hideModals()
+            setTimeout(() => {
+                alert("✅ $100 transferred to Savings\n\nNew savings balance: $100.00\nInterest will begin accruing immediately")
+            }, 400)
+        }
+        
+        function openDeals() {
+            document.getElementById('deals-modal').classList.remove('hidden')
+            document.getElementById('deals-modal').classList.add('flex')
+        }
+        
+        function dismissPromo() {
+            const banner = document.querySelector('.bg-emerald-400')
+            if (banner) {
+                banner.style.transition = 'all 0.3s'
+                banner.style.opacity = '0'
+                setTimeout(() => banner.style.display = 'none', 300)
+            }
+        }
+        
+        function activateCard() {
+            const btn = document.getElementById('activate-btn')
+            if (btn.innerHTML.includes('ACTIVATE')) {
+                btn.innerHTML = `<i class="fa-solid fa-circle-check"></i> CARD ACTIVATED`
+                btn.classList.add('!bg-emerald-600')
+                setTimeout(() => {
+                    alert('✅ Debit card activated!\n\nCard number: 4242 4242 4242 4242\nCVV: 424\nExpires: 04/29\n\nReady to use anywhere Visa is accepted.')
+                }, 600)
+            }
+        }
+        
+        function selectCardDesign(n) {
+            if (n === 1) alert('✅ Premium Black Metal card ordered (ships in 5 business days)')
+            else if (n === 2) alert('✅ Gradient card added to Apple Wallet instantly')
+            navigateTo('cards')
+        }
+        
+        function toggleFreeze() {
+            const isFrozen = document.getElementById('freeze-toggle').checked
+            if (isFrozen) {
+                alert('❄️ Card frozen. All transactions declined until unfrozen.')
+            } else {
+                alert('✅ Card unfrozen and active.')
+            }
+        }
+        
+        function addNewCard() {
+            const container = document.querySelector('#screen-cards .flex-1')
+            const newCard = document.createElement('div')
+            newCard.className = 'bg-gradient-to-br from-blue-600 to-cyan-400 rounded-3xl p-6 text-white mt-6 relative debit-card'
+            newCard.innerHTML = `
+                <div class="flex justify-between"><div class="text-3xl font-bold">chime</div><div class="text-xs px-4 py-1 bg-white/20 rounded-3xl">VIRTUAL</div></div>
+                <div class="mt-10 text-4xl">•••• •••• •••• 9999</div>
+                <div class="mt-8 flex justify-between"><div>Shellysingh</div><div>VISA</div></div>
+                <div onclick="this.parentElement.remove()" class="absolute top-4 right-4 text-white text-xs cursor-pointer">×</div>`
+            container.appendChild(newCard)
+            alert('🪄 New virtual card created and instantly usable')
+        }
+        
+        function showTransactionDetail() {
+            document.getElementById('tx-modal').classList.remove('hidden')
+            document.getElementById('tx-modal').classList.add('flex')
+        }
+        
+        function quickSendMoney() {
+            const amount = prompt('💸 How much would you like to send?', '25')
+            if (amount && parseFloat(amount) > 0) {
+                alert(`✅ $${amount} sent instantly via Chime Pay Anyone`)
+            }
+        }
+        
+        function quickDeposit() {
+            alert('📱 Mobile deposit opened\n\nTake a clear photo of the front and back of your check')
+            setTimeout(() => alert('✅ Check deposited successfully\nFunds available in 1-2 business days'), 1800)
+        }
+        
+        function quickBillPay() {
+            alert('📤 Bill Pay launched\n\nSelect a biller or add a new one (rent, utilities, subscriptions)')
+        }
+        
+        function openAllTools() {
+            alert('🔧 Financial tools:\n• Auto-save\n• Credit Builder\n• Round-ups\n• Goal setting\n• Early direct deposit')
+        }
+        
+        function openMoveMoney() {
+            alert('💰 Move Money opened\n\nTransfer instantly between Checking, Savings, MyPay, or external accounts')
+            navigateTo('home')
+        }
+        
+        function showProfileMenu() {
+            alert('👤 Account settings:\n• Change password\n• Two-factor authentication\n• Statements\n• Log out')
+        }
+        
+        function showBellMenu() {
+            document.getElementById('bell-menu').classList.remove('hidden')
+            document.getElementById('bell-menu').classList.add('flex')
+        }
+        
+        function openMoreMenu() {
+            alert('📋 More options:\n• Credit Builder\n• Refer & earn\n• Support\n• App settings')
+        }
+        
+        window.onload = init
+    </script>
+</body>
+</html>
