@@ -17,16 +17,19 @@
             font-family: 'Inter', system_ui, sans-serif;
         }
         
-        .app-container {
-            max-width: 390px;
-            width: 100%;
-            margin: 0 auto;
+        body {
             background: white;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        
+        .app-container {
+            width: 100%;
             min-height: 100vh;
-            box-shadow: 0 0 30px rgba(0, 0, 0, 0.15);
+            background: white;
             position: relative;
             overflow: hidden;
-            border-radius: 40px;
         }
         
         .header-bg {
@@ -71,18 +74,8 @@
         }
     </style>
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
-    <div class="app-container rounded-3xl overflow-hidden border border-gray-200" id="app">
-        
-        <!-- TOP STATUS BAR -->
-        <div class="h-11 bg-white flex items-end justify-between px-6 text-xs text-gray-700 font-medium z-50">
-            <div>9:41</div>
-            <div class="flex items-center gap-3">
-                <i class="fa-solid fa-signal-bars"></i>
-                <i class="fa-solid fa-wifi"></i>
-                <i class="fa-solid fa-battery-three-quarters"></i>
-            </div>
-        </div>
+<body>
+    <div class="app-container" id="app">
         
         <!-- NAVIGATION BAR -->
         <div class="flex items-center justify-between px-5 py-3 header-bg text-white sticky top-0 z-40">
@@ -350,7 +343,7 @@
         </div>
         
         <!-- BOTTOM NAVIGATION -->
-        <div class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[390px] bg-white border-t z-50 flex items-center justify-around py-2 text-xs font-medium text-gray-500">
+        <div class="fixed bottom-0 left-0 right-0 bg-white border-t z-50 flex items-center justify-around py-2 text-xs font-medium text-gray-500">
             <div onclick="navigateTo('home')" class="flex flex-col items-center active:scale-95 transition-transform" id="nav-home">
                 <i class="fa-solid fa-house text-lg mb-px"></i>
                 Home
